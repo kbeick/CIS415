@@ -8,18 +8,37 @@
 #define NUM_ARGS (50)
 #define MAX_LEN_ARG (500)
 
+typedef enum { false, true } bool;
+
 extern char** environ;
+char prompt[15] = "zoolander# ";
+char timeout_exp_msg[25] = "Time's up. you lose.\n";
+char beat_timeout_msg[35] = "Well, finished before timer...\n";
+char readin_err_msg[85] = "The shell doesn't like your input. Make sure your input is less than 1024 bytes.\n";
+bool TIMEOUT_LIMIT = false;
 
 
-
-int main()
+void catch_alarm(int signum)
 {
-    char prompt[10] = "kevin# ";
-    char readin_err_msg[85] = "The shell doesn't like your input. Make sure your input is less than 1024 bytes.\n";
+    write(STDOUT_FILENO, timeout_exp_msg, sizeof(timeout_exp_msg));
+    _exit(0);
+}
+
+
+int main(int argc, char **argv)
+{
     char* usrCmd[NUM_ARGS];
     char tmp[MAX_LEN_ARG];
     char c[1];
-    int inputCharCount, cmdIndex, arglen;
+    int timeout, inputCharCount, cmdIndex, arglen;
+
+    signal(SIGALRM, catch_alarm);
+
+    // Check for Command Line Arguments
+    if (argc > 1){
+        timeout = atoi(argv[1]);
+        TIMEOUT_LIMIT = true;
+    }
 
 
     while(1){
@@ -29,7 +48,7 @@ int main()
         cmdIndex = 0;
         arglen = 0;
 
-        // Read user's input from standard in
+        // Read and Parse user's input from standard in
         while(read(STDIN_FILENO, c, 1) > 0){
             if (inputCharCount > MAXINPUT){
                 write(STDOUT_FILENO, readin_err_msg, sizeof(readin_err_msg));
@@ -55,10 +74,13 @@ int main()
             inputCharCount++;
         }
 
-        int i;
-        for(i=0; i<=cmdIndex; i++){
-            printf("%s\n", usrCmd[i]);
-        }fflush(stdout);
+        // int i;
+        // for(i=0; i<=cmdIndex; i++){
+        //     printf("%s\n", usrCmd[i]);
+        // }fflush(stdout);
+
+        // Start timer
+        if (TIMEOUT_LIMIT == true){ alarm(timeout); }  
         
         // Fork a new process
         int pid = fork();
@@ -67,6 +89,10 @@ int main()
             execve(usrCmd[0], usrCmd, environ);
         }else{//Parent
             wait();
+            if (TIMEOUT_LIMIT == true){
+                alarm(0); 
+                write(STDOUT_FILENO, beat_timeout_msg, sizeof(beat_timeout_msg));
+            }  
         }
     }
 }

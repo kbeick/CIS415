@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-#define MAXINPUT (1025)
+#define MAXINPUT (1024)
 #define MAX_NUM_ARGS (50)
 #define MAX_LEN_ARG (500)
 
@@ -22,24 +22,29 @@ int pid;
 
 void catch_alarm(int signum)
 {
-    if (pid > 0) { kill(pid, SIGKILL); }
+    if (pid > 0) { 
+        if (kill(pid, SIGKILL) < 0) {
+            perror("The following error occured while calling kill()"); 
+        }   
+    }
     KILLED = true;
-    // else{ printf("dammit!!!!\n");}
-    // fflush(stdout);
-    write(STDOUT_FILENO, timeout_exp_msg, sizeof(timeout_exp_msg));
-    // _exit(0);
+    if ( write(STDOUT_FILENO, timeout_exp_msg, sizeof(timeout_exp_msg)) < 0) {
+        perror("The following error occured while calling write()"); 
+    }
 }
 
 
 int main(int argc, char **argv)
 {
-    char* usrCmd[MAX_NUM_ARGS];
-    char tmp[MAX_NUM_ARGS][MAX_LEN_ARG];
+    char* usrCmd[MAX_NUM_ARGS+1];
+    char tmp[MAX_NUM_ARGS+1][MAX_LEN_ARG+1];
     char c[1];
     int timeout, inputCharCount, cmdIndex, arglen, numargs;
 
     // SIGNAL HANDLERS
-    signal(SIGALRM, catch_alarm);
+    if (signal(SIGALRM, catch_alarm) < 0) {
+        perror("The following error occured while calling signal()"); 
+    }
 
     // Check for Command Line Arguments
     if (argc > 1){
@@ -51,7 +56,9 @@ int main(int argc, char **argv)
     while(1){
     PROMPT_USER:
         KILLED = false;
-        write(STDOUT_FILENO, prompt, sizeof(prompt));
+        if (write(STDOUT_FILENO, prompt, sizeof(prompt)) < 0){
+            perror("The following error occured while calling write()"); 
+        }
         inputCharCount = 0;
         cmdIndex = 0;
         arglen = 0;
@@ -60,7 +67,9 @@ int main(int argc, char **argv)
         // Read and Parse user's input from standard in
         while(read(STDIN_FILENO, c, 1) > 0){
             if (inputCharCount > MAXINPUT || numargs > MAX_NUM_ARGS){
-                write(STDOUT_FILENO, readin_err_msg, sizeof(readin_err_msg));
+                if (write(STDOUT_FILENO, readin_err_msg, sizeof(readin_err_msg)) < 0) {
+                    perror("The following error occured while calling write()"); 
+                }
                 goto PROMPT_USER;
             }
             if( c[0] == '\n'){
@@ -94,18 +103,33 @@ int main(int argc, char **argv)
         
         // Fork a new process
         pid = fork();
-        if (pid < 0){continue;} //TODO provide some error msg here TODO
+        if (pid < 0){
+            perror("The following error occured while calling fork()"); 
+            continue;
+        }
         if (!pid){//Child
-            execve(usrCmd[0], usrCmd, environ);
+            if (execve(usrCmd[0], usrCmd, environ) < 0) {
+                perror("The following error occured while calling execve()"); 
+            }
             _exit(0);
         }else{//Parent
             // Start timer
-            if (TIMEOUT_LIMIT == true){ alarm(timeout); } 
-            wait(NULL);
+            if (TIMEOUT_LIMIT == true){ 
+                if (alarm(timeout) < 0) {
+                    perror("The following error occured while calling alarm()"); 
+                }   
+            } 
+            if (wait(NULL) < 0) {
+                perror("The following error occured while calling wait()"); 
+            }
             // Done waiting, child process must have ended.
             if ( TIMEOUT_LIMIT == true && KILLED == false){
-                alarm(0); 
-                write(STDOUT_FILENO, beat_timeout_msg, sizeof(beat_timeout_msg));
+                if (alarm(0) < 0) {
+                    perror("The following error occured while calling alarm()"); 
+                }    
+                if ( write(STDOUT_FILENO, beat_timeout_msg, sizeof(beat_timeout_msg)) < 0) {
+                    perror("The following error occured while calling write()"); 
+                } 
             }  
         }
     }

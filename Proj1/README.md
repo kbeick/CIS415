@@ -5,9 +5,10 @@ CIS415 Project 1
 :source files:
 * ArrogantShell.c -- source code for shell's main functionality
 * makefile --------- use to easily compile code
+* helloSysCall.c --- creates a system call with the name *sys_helloworld()*
 
 ###Extra Credit:
--I implemented an input parser to handle program arguments and pass them to execve.
+- I implemented an input parser to handle program arguments and pass them to execve.
 
 ###Compilation Instructions:
 

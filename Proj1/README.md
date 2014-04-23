@@ -6,15 +6,15 @@ CIS415 Projec 1
     ArrogantShell.c
 
 
-#Extra Credit:
+###Extra Credit:
     I implemented an input parser to handle program arguments and pass them to execve.
 
-#Compilation Instructions:
+###Compilation Instructions:
 
-#Project Overview:
+###Project Overview:
 
-#Code Description and Layout:
+###Code Description and Layout:
 
-#General Comments:
+###General Comments:
 
-#hours spent on project.
+hours spent on project.

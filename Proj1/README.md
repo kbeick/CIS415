@@ -2,7 +2,7 @@ CIS415 Projec 1
 ======
 :author: Kevin Beick
 
-:source files:
+source files
     ArrogantShell.c
 
 

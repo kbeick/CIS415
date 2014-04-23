@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #define MAXINPUT (1025)
-#define NUM_ARGS (50)
+#define MAX_NUM_ARGS (50)
 #define MAX_LEN_ARG (500)
 
 typedef enum { false, true } bool;
@@ -14,7 +14,7 @@ extern char** environ;
 char prompt[15] = "arrogant# ";
 char timeout_exp_msg[40] = "Time's up, you lose, I'm the best.\n";
 char beat_timeout_msg[50] = "Well aren't you lucky, finished before timer...\n";
-char readin_err_msg[85] = "The shell doesn't like your input. Make sure your input is less than 1024 bytes.\n";
+char readin_err_msg[125] = "The shell doesn't like your input. Make sure your input has at most 1024 bytes and 50 whitespace-separated tokens.\n";
 bool TIMEOUT_LIMIT = false;
 bool KILLED = false;
 int pid;
@@ -33,10 +33,10 @@ void catch_alarm(int signum)
 
 int main(int argc, char **argv)
 {
-    char* usrCmd[NUM_ARGS];
-    char tmp[NUM_ARGS][MAX_LEN_ARG];
+    char* usrCmd[MAX_NUM_ARGS];
+    char tmp[MAX_NUM_ARGS][MAX_LEN_ARG];
     char c[1];
-    int timeout, inputCharCount, cmdIndex, arglen;
+    int timeout, inputCharCount, cmdIndex, arglen, numargs;
 
     // SIGNAL HANDLERS
     signal(SIGALRM, catch_alarm);
@@ -55,12 +55,12 @@ int main(int argc, char **argv)
         inputCharCount = 0;
         cmdIndex = 0;
         arglen = 0;
+        numargs = 1;
 
         // Read and Parse user's input from standard in
         while(read(STDIN_FILENO, c, 1) > 0){
-            if (inputCharCount > MAXINPUT){
+            if (inputCharCount > MAXINPUT || numargs > MAX_NUM_ARGS){
                 write(STDOUT_FILENO, readin_err_msg, sizeof(readin_err_msg));
-                read(STDIN_FILENO, c, 1);
                 goto PROMPT_USER;
             }
             if( c[0] == '\n'){
@@ -75,6 +75,7 @@ int main(int argc, char **argv)
                 tmp[cmdIndex][arglen] = '\0';
                 usrCmd[cmdIndex] = tmp[cmdIndex];
                 cmdIndex++;
+                numargs++;
                 arglen = 0;
             }else{
             // normal character
@@ -100,7 +101,7 @@ int main(int argc, char **argv)
         }else{//Parent
             // Start timer
             if (TIMEOUT_LIMIT == true){ alarm(timeout); } 
-            wait();
+            wait(NULL);
             // Done waiting, child process must have ended.
             if ( TIMEOUT_LIMIT == true && KILLED == false){
                 alarm(0); 

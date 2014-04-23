@@ -3,4 +3,4 @@ CIS415
 
 
 Extra Credit:
-    I implemented a simple parser to handle command arguments and pass them to execve.
+    I implemented a simple input parser to handle program arguments and pass them to execve.

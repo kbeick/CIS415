@@ -11,27 +11,34 @@
 typedef enum { false, true } bool;
 
 extern char** environ;
-char prompt[15] = "zoolander# ";
-char timeout_exp_msg[25] = "Time's up. you lose.\n";
-char beat_timeout_msg[35] = "Well, finished before timer...\n";
+char prompt[15] = "arrogant# ";
+char timeout_exp_msg[40] = "Time's up, you lose, I'm the best.\n";
+char beat_timeout_msg[50] = "Well aren't you lucky, finished before timer...\n";
 char readin_err_msg[85] = "The shell doesn't like your input. Make sure your input is less than 1024 bytes.\n";
 bool TIMEOUT_LIMIT = false;
+bool KILLED = false;
+int pid;
 
 
 void catch_alarm(int signum)
 {
+    if (pid > 0) { kill(pid, SIGKILL); }
+    KILLED = true;
+    // else{ printf("dammit!!!!\n");}
+    // fflush(stdout);
     write(STDOUT_FILENO, timeout_exp_msg, sizeof(timeout_exp_msg));
-    _exit(0);
+    // _exit(0);
 }
 
 
 int main(int argc, char **argv)
 {
     char* usrCmd[NUM_ARGS];
-    char tmp[MAX_LEN_ARG];
+    char tmp[NUM_ARGS][MAX_LEN_ARG];
     char c[1];
     int timeout, inputCharCount, cmdIndex, arglen;
 
+    // SIGNAL HANDLERS
     signal(SIGALRM, catch_alarm);
 
     // Check for Command Line Arguments
@@ -43,6 +50,7 @@ int main(int argc, char **argv)
 
     while(1){
     PROMPT_USER:
+        KILLED = false;
         write(STDOUT_FILENO, prompt, sizeof(prompt));
         inputCharCount = 0;
         cmdIndex = 0;
@@ -52,47 +60,54 @@ int main(int argc, char **argv)
         while(read(STDIN_FILENO, c, 1) > 0){
             if (inputCharCount > MAXINPUT){
                 write(STDOUT_FILENO, readin_err_msg, sizeof(readin_err_msg));
+                read(STDIN_FILENO, c, 1);
                 goto PROMPT_USER;
             }
             if( c[0] == '\n'){
             // End of command
-                tmp[arglen] = '\0';
-                usrCmd[cmdIndex] = tmp;
+                tmp[cmdIndex][arglen] = '\0';
+                usrCmd[cmdIndex] = tmp[cmdIndex];
+                // printf("old entry:%s\n", usrCmd[cmdIndex-2]);
                 usrCmd[cmdIndex+1] = NULL;
                 break;
             }else if (c[0] == ' ' || c[0] == '\t'){
             // tokenize command
-                tmp[arglen] = '\0';
-                usrCmd[cmdIndex] = tmp;
+                tmp[cmdIndex][arglen] = '\0';
+                usrCmd[cmdIndex] = tmp[cmdIndex];
                 cmdIndex++;
                 arglen = 0;
             }else{
             // normal character
-                tmp[arglen] = c[0]; 
+                tmp[cmdIndex][arglen] = c[0]; 
                 arglen++;
             }
             inputCharCount++;
         }
 
-        // int i;
-        // for(i=0; i<=cmdIndex; i++){
-        //     printf("%s\n", usrCmd[i]);
+        // int i=0;
+        // while(usrCmd[i] != NULL){
+        //     printf("%s, %i\n", usrCmd[i], i);
+        //     i++;
         // }fflush(stdout);
-
-        // Start timer
-        if (TIMEOUT_LIMIT == true){ alarm(timeout); }  
+ 
         
         // Fork a new process
-        int pid = fork();
+        pid = fork();
         if (pid < 0){continue;} //TODO provide some error msg here TODO
         if (!pid){//Child
             execve(usrCmd[0], usrCmd, environ);
+            _exit(0);
         }else{//Parent
+            // Start timer
+            if (TIMEOUT_LIMIT == true){ alarm(timeout); } 
             wait();
-            if (TIMEOUT_LIMIT == true){
+            // Done waiting, child process must have ended.
+            if ( TIMEOUT_LIMIT == true && KILLED == false){
                 alarm(0); 
                 write(STDOUT_FILENO, beat_timeout_msg, sizeof(beat_timeout_msg));
             }  
         }
     }
+    printf("out of wihle loop???\n");
+    fflush(stdout);
 }

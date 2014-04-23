@@ -3,11 +3,11 @@ CIS415 Project 1
 :author: Kevin Beick
 
 :source files:
-    ArrogantShell.c
-
+* ArrogantShell.c -- source code for shell's main functionality
+* makefile --------- use to easily compile code
 
 ###Extra Credit:
-I implemented an input parser to handle program arguments and pass them to execve.
+-I implemented an input parser to handle program arguments and pass them to execve.
 
 ###Compilation Instructions:
 
@@ -17,4 +17,4 @@ I implemented an input parser to handle program arguments and pass them to execv
 
 ###General Comments:
 
-hours spent on project.
+6+3+ hours spent on project.

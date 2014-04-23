@@ -2,12 +2,12 @@ CIS415 Projec 1
 ======
 :author: Kevin Beick
 
-source files
+:source files:
     ArrogantShell.c
 
 
 ###Extra Credit:
-    I implemented an input parser to handle program arguments and pass them to execve.
+I implemented an input parser to handle program arguments and pass them to execve.
 
 ###Compilation Instructions:
 

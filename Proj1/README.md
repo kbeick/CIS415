@@ -1,4 +1,4 @@
-CIS415 Projec 1
+CIS415 Project 1
 ======
 :author: Kevin Beick
 

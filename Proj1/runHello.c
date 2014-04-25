@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <linux/kernel.h>
 #include <sys/syscall.h>
-#define __NR_hello 340
+#define __NR_hello 350
 
 long int hello_syscall(void) {
     return syscall(__NR_hello);

@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     char c[1];
     int timeout, inputCharCount, cmdIndex, arglen, numargs;
 
-    // SIGNAL HANDLERS
+    // SIGNAL HANDLER
     if (signal(SIGALRM, catch_alarm) < 0) {
         perror("The following error occured while calling signal()"); 
     }

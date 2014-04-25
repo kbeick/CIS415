@@ -1,3 +1,8 @@
+/*
+:author: Kevin Beick
+Proj1 : CIS415 : S14
+*/
+
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>

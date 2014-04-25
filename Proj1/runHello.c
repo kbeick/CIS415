@@ -1,3 +1,8 @@
+/*
+:author: Kevin Beick
+Proj1 : CIS415 : S14
+*/
+
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <unistd.h>

@@ -6,5 +6,5 @@ CC = gcc
 ArrogantShell: ArrogantShell.c
 	$(CC) -o arrogantshell ArrogantShell.c
 
-clear:
+clean:
 	rm -f arrogantshell
